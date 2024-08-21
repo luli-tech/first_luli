@@ -1,23 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import Nav from "../src/components/nav";
+import Form from "./components/body/form/input";
+import Results from "./components/body/formResult";
+import React, { useState, useReducer } from "react";
+
+const ACTIONS = {
+  ADD_INFO: "add_info",
+  TOGGLE: "toggle",
+  DELETE: "delete",
+};
+
+function reducer(state, action) {
+  if (action.type === ACTIONS.ADD_INFO)
+    return [...state, newState(action.payload.name, action.payload.age)];
+  if (action.type === ACTIONS.TOGGLE) {
+    return state.map((m) =>
+      m.id === action.payload.id ? { ...m, complete: !m.complete } : m
+    );
+  }
+  if (action.type === ACTIONS.DELETE) {
+    return state.filter((m) => m.id !== action.payload.id);
+  }
+}
+
+function newState(name, age) {
+  return { name, age, id: Date.now(), complete: false };
+}
 
 function App() {
+  const [state, dispatch] = useReducer(reducer, []);
+  const [initial, setInitial] = useState({
+    name: "",
+    age: "",
+  });
+
+  function toggle(id) {
+    dispatch({ type: ACTIONS.TOGGLE, payload: { id } });
+  }
+
+  function deleteItem(id) {
+    dispatch({ type: ACTIONS.DELETE, payload: { id } });
+  }
+
+  console.log(state);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="main-container">
+      <Nav initial={state} />
+      <Form dispatch={dispatch} initial={initial} setinitial={setInitial} />
+      <Results toggle={toggle} deleteItem={deleteItem} initial={state} />
     </div>
   );
 }
